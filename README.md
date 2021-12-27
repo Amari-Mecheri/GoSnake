@@ -14,15 +14,23 @@ inheritance (is a) is implemented by using an anonymous field of type child
 composition (has) is implemented by using a named field of type child
 
 => In the case of inheritance, exported methods of the child can be used and exported by the parent as if they were methods of the parent.
+
 => In the case of composition methods of the child are only accessible via the corresponding named field.
 
 main function
+
 | (var) ->	gamestate
+
 			| (is a) -> gameboard
+			
 					| (has) -> snake
+					
 					| (has) -> candy
+					
 	| (var) ->	uimanager
+	
 				| (has) -> gocui
+				
 
 uimanager encapsulates functions from Gocui https:github.com/jroimartin/gocui
 
