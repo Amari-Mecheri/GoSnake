@@ -20,12 +20,12 @@ amari.mecheri@gmail.com
 
 
 	main function
-		    | (var) ->	gamestate
-						    | (is a) -> gameboard
-											| (has) -> snake
-	 										| (has) -> candy
-		    | (var) ->	uimanager
-						    | (has) -> gocui
+		| (var) ->	gamestate
+				    | (is a) -> gameboard
+							| (has) -> snake
+	 						| (has) -> candy
+		| (var) ->	uimanager
+				    | (has) -> gocui
 
 - <b>uimanager</b> encapsulates functions from [gocui]
 
