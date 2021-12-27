@@ -17,12 +17,12 @@ composition (has) is implemented by using a named field of type child
 => In the case of composition methods of the child are only accessible via the corresponding named field.
 
 main function
-		| (var) ->	gamestate
-						| (is a) -> gameboard
-										| (has) -> snake
-	 									| (has) -> candy
-		| (var) ->	uimanager
-						| (has) -> gocui
+| (var) ->	gamestate
+			| (is a) -> gameboard
+					| (has) -> snake
+					| (has) -> candy
+	| (var) ->	uimanager
+				| (has) -> gocui
 
 uimanager encapsulates functions from Gocui https:github.com/jroimartin/gocui
 
