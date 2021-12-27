@@ -32,7 +32,7 @@
 // The game logic is held by gamestate. The Play() methods plays a round.
 //
 // The rounds are called in a loop controlled by tickers at intervals
-// The errors from the routines are channelled back to the main function
+// The errors from the routines are channeled back to the main function
 //
 // In order to manage the keys pressed, the bindings are all affected to the same eventHandler which selects the appropriate action
 // Since the eventHandler will only receive the key pressed as parameter, a closure is used to allow access to the main parameters
@@ -74,7 +74,7 @@ func main() {
 		}
 		scrollOver = true
 		err        error // main function errors
-		errChn     error // errors channelled from routines are written in errChn
+		errChn     error // errors channeled from routines are written in errChn
 	)
 
 	// When terminating if any, errChn or err are displayed
@@ -433,7 +433,7 @@ func handleRoutineError(userInterface uimanager.UIManagerer, errChan chan error,
 			err = &err2
 		}
 	}
-	// The error is channelled out via errChan
+	// The error is channeled out via errChan
 	errChan <- *err
 }
 

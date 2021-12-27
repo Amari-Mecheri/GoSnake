@@ -1,9 +1,24 @@
+## works fine on Linux, Build will work on Windows too, the other commands have not be adapted to Windows yet.
 BINARY_NAME=gosnake
 
+.ONESHELL:
 build:
+ifeq ($(OS),Windows_NT)
+	@SET GOARCH=amd64
+	@SET GOOS=darwin
+	@go build -o ./bin/${BINARY_NAME}.app ./cmd/gosnake
+	@SET GOARCH=amd64
+	@SET GOOS=linux
+	@go build -o ./bin/${BINARY_NAME} ./cmd/gosnake
+	@SET GOARCH=amd64
+	@SET GOOS=windows
+	@go build -o ./bin/${BINARY_NAME}.exe ./cmd/gosnake
+else
 	@GOARCH=amd64 GOOS=darwin go build -o ./bin/${BINARY_NAME}.app ./cmd/gosnake
 	@GOARCH=amd64 GOOS=linux go build -o ./bin/${BINARY_NAME} ./cmd/gosnake
 	@GOARCH=amd64 GOOS=windows go build -o ./bin/${BINARY_NAME}.exe ./cmd/gosnake
+endif
+
 
 run:
 	go run ./cmd/gosnake
