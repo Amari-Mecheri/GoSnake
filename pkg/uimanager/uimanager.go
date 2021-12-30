@@ -256,7 +256,6 @@ func (uim *uiManager) OnKeyPress(fn func(Key) error) (err error) {
 	return nil
 }
 
-//
 func (uim *uiManager) setKeybinding(key gocui.Key, fn func(Key) error) (err error) {
 	defer common.ErrorWrapper(common.GetCurrentFuncName(), &err)
 

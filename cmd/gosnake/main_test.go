@@ -416,7 +416,6 @@ func Test_gameEngine(t *testing.T) {
 				gameState:     &mocks.GameStater{},
 				userInterface: &mocks.UIManagerer{},
 				errChan:       make(chan error),
-				//gameInProgress: new(bool),
 			},
 			mockGameInProgess: false,
 			MockSpriteList: []common.Sprite{
@@ -663,6 +662,7 @@ func Test_startGame(t *testing.T) {
 			time.Sleep(1 * time.Second)
 			// checks/waits for the gameOverAnim routine to terminate
 			for !*tt.args.scrollOver { //nolint
+				time.Sleep(1 * time.Second)
 			}
 			gotErr := (*tt.args.errChn != nil) || (err != nil)
 			require.Equal(t, tt.wantErr, gotErr, *tt.args.errChn)
