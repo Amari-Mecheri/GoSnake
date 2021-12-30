@@ -162,11 +162,8 @@ func reportError(funcName string, err, errChn *error) {
 func initGame(gameState gamestate.GameStater, boardSize common.Size) (err error) {
 	defer common.ErrorWrapper(common.GetCurrentFuncName(), &err)
 
-	if err := gameState.InitBoard(boardSize); err != nil {
-		return err
-	}
+	return gameState.InitBoard(boardSize)
 
-	return nil
 }
 
 func displayPlayers(gameState gamestate.GameStater, userInterface uimanager.UIManagerer) (err error) {

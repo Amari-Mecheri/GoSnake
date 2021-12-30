@@ -21,7 +21,7 @@ type snake struct {
 }
 
 // ErrNoSnakeBody is a custom error type
-var ErrNoSnakeBody = errors.New("The snake has no body")
+var ErrNoSnakeBody = errors.New("the snake has no body")
 
 // New returns an instance of snake
 func New() Snaker {

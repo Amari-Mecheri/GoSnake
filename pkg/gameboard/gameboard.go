@@ -18,10 +18,10 @@ const (
 
 // Defines custom errors
 var (
-	ErrInvalidSnakeReference = errors.New("The snake object is nil")
-	ErrInvalidCandyReference = errors.New("The candy object is nil")
-	ErrInvalidSize           = errors.New("Invalid board size")
-	ErrInvalidPosition       = errors.New("Invalid position")
+	ErrInvalidSnakeReference = errors.New("the snake object is nil")
+	ErrInvalidCandyReference = errors.New("the candy object is nil")
+	ErrInvalidSize           = errors.New("invalid board size")
+	ErrInvalidPosition       = errors.New("invalid position")
 )
 
 // GameBoarder is the interface defining gameBoard exported methods

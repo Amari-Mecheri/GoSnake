@@ -6,7 +6,7 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
-// GameStater is the gameState interface
+// UIManagerer is the interface for uiManager
 type UIManagerer interface {
 	OpenUIManager() (err error)
 	Close()
@@ -97,7 +97,7 @@ func (uim *uiManager) Update(viewName string, spriteList []common.Sprite) (err e
 
 	uim.gui.Update(
 		func(g *gocui.Gui) error {
-			return uim.update(view, spriteList)
+			return uim.displaySprites(view, spriteList)
 		})
 
 	return nil
@@ -121,7 +121,7 @@ func (uim *uiManager) UpdateLn(viewName, msg string) (err error) {
 	return nil
 }
 
-func (uim *uiManager) update(view *gocui.View, spriteList []common.Sprite) (err error) {
+func (uim *uiManager) displaySprites(view *gocui.View, spriteList []common.Sprite) (err error) {
 	defer common.ErrorWrapper(common.GetCurrentFuncName(), &err)
 
 	for i := range spriteList {
@@ -260,14 +260,10 @@ func (uim *uiManager) OnKeyPress(fn func(Key) error) (err error) {
 func (uim *uiManager) setKeybinding(key gocui.Key, fn func(Key) error) (err error) {
 	defer common.ErrorWrapper(common.GetCurrentFuncName(), &err)
 
-	if err := uim.gui.SetKeybinding("", key, gocui.ModNone,
+	return uim.gui.SetKeybinding("", key, gocui.ModNone,
 		func(g *gocui.Gui, v *gocui.View) error {
 			return fn(Key(key))
-		}); err != nil {
-		return err
-	}
-
-	return nil
+		})
 }
 
 // Quit stops the mainLoop
