@@ -129,6 +129,7 @@ func TestSnake_Position(t *testing.T) {
 		name         string
 		fields       fields
 		wantPosition common.Position
+		wantErrType  error
 		wantErr      bool
 	}{
 		{
@@ -138,6 +139,7 @@ func TestSnake_Position(t *testing.T) {
 				direction: testdata.Direction1_0,
 			},
 			wantPosition: testdata.Position0_0,
+			wantErrType:  ErrNoSnakeBody,
 			wantErr:      true,
 		},
 		{
@@ -185,6 +187,9 @@ func TestSnake_Position(t *testing.T) {
 			gotPosition, err := aSnake.Position()
 			gotErr := err != nil
 			require.Equal(t, tt.wantErr, gotErr)
+			if gotErr {
+				require.ErrorIs(t, err, tt.wantErrType)
+			}
 			require.Equal(t, tt.wantPosition, gotPosition)
 		})
 	}
@@ -199,6 +204,7 @@ func TestSnake_GetNextMove(t *testing.T) {
 		name             string
 		fields           fields
 		wantNextPosition common.Position
+		wantErrType      error
 		wantErr          bool
 	}{
 		{
@@ -208,6 +214,7 @@ func TestSnake_GetNextMove(t *testing.T) {
 				direction: testdata.Direction1_0,
 			},
 			wantNextPosition: testdata.Position0_0,
+			wantErrType:      ErrNoSnakeBody,
 			wantErr:          true,
 		},
 		{
@@ -294,6 +301,9 @@ func TestSnake_GetNextMove(t *testing.T) {
 			gotNextPosition, err := aSnake.NextMove()
 			gotErr := (err != nil)
 			require.Equal(t, tt.wantErr, gotErr)
+			if gotErr {
+				require.ErrorIs(t, err, tt.wantErrType)
+			}
 			require.Equal(t, tt.wantNextPosition, gotNextPosition)
 		})
 	}
@@ -313,6 +323,7 @@ func TestSnake_MoveTo(t *testing.T) {
 		args         args
 		wantTheTail  common.Position
 		wantPosition common.Position
+		wantErrType  error
 		wantErr      bool
 	}{
 		{
@@ -326,6 +337,7 @@ func TestSnake_MoveTo(t *testing.T) {
 			},
 			wantTheTail:  testdata.Position0_0,
 			wantPosition: testdata.Position0_0,
+			wantErrType:  ErrNoSnakeBody,
 			wantErr:      true,
 		},
 		{
@@ -415,6 +427,9 @@ func TestSnake_MoveTo(t *testing.T) {
 			gotTheTail, err := aSnake.MoveTo(tt.args.newPosition)
 			gotErr := (err != nil)
 			require.Equal(t, tt.wantErr, gotErr)
+			if gotErr {
+				require.ErrorIs(t, err, tt.wantErrType)
+			}
 			require.Equal(t, tt.wantTheTail, gotTheTail)
 			size, err := aSnake.Size()
 			if err == nil {
@@ -564,4 +579,79 @@ func TestNew(t *testing.T) {
 	var wantType *snake
 	var got = New()
 	require.IsType(t, wantType, got)
+}
+
+func Test_snake_Tail(t *testing.T) {
+	type fields struct {
+		body      []common.Position
+		direction common.Direction
+	}
+	tests := []struct {
+		name        string
+		fields      fields
+		wantTail    common.Position
+		wantErrType error
+		wantErr     bool
+	}{
+		{
+			name: "TestEmptyBody",
+			fields: fields{
+				body:      nil,
+				direction: testdata.DirectionMinus1_Minus1,
+			},
+			wantTail:    testdata.Position0_0,
+			wantErrType: ErrNoSnakeBody,
+			wantErr:     true,
+		},
+		{
+			name: "TestBodyOne",
+			fields: fields{
+				body: []common.Position{
+					{
+						X: 1,
+						Y: 2,
+					},
+				},
+				direction: testdata.Direction1_0,
+			},
+			wantTail: testdata.Position1_2,
+			wantErr:  false,
+		},
+		{
+			name: "TestBodyTwo",
+			fields: fields{
+				body: []common.Position{
+					{
+						X: 1,
+						Y: 3,
+					},
+					{
+						X: 2,
+						Y: 3,
+					},
+				},
+				direction: testdata.Direction1_0,
+			},
+			wantTail: common.Position{
+				X: 1,
+				Y: 3,
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			aSnake := &snake{
+				body:      tt.fields.body,
+				direction: tt.fields.direction,
+			}
+			gotTail, err := aSnake.Tail()
+			gotErr := (err != nil)
+			require.Equal(t, tt.wantErr, gotErr)
+			if gotErr {
+				require.ErrorIs(t, err, tt.wantErrType)
+			}
+			require.Equal(t, tt.wantTail, gotTail)
+		})
+	}
 }

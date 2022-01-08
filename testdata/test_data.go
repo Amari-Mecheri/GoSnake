@@ -35,6 +35,10 @@ var (
 		X: 0,
 		Y: 0,
 	}
+	Position0_1 = common.Position{
+		X: 0,
+		Y: 1,
+	}
 	Position1_1 = common.Position{
 		X: 1,
 		Y: 1,
@@ -118,6 +122,17 @@ var (
 		},
 		{
 			'a', 'b', 'c',
+		},
+	}
+	Board3_3Snake_1 = [][]rune{
+		{
+			'a', 'S', 'c',
+		},
+		{
+			'a', 'S', 'd',
+		},
+		{
+			'a', 'S', 'c',
 		},
 	}
 	Board3_3WrongAllocation = [][]rune{

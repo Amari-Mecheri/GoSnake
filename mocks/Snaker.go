@@ -112,3 +112,24 @@ func (_m *Snaker) Size() (int, error) {
 
 	return r0, r1
 }
+
+// Tail provides a mock function with given fields:
+func (_m *Snaker) Tail() (common.Position, error) {
+	ret := _m.Called()
+
+	var r0 common.Position
+	if rf, ok := ret.Get(0).(func() common.Position); ok {
+		r0 = rf()
+	} else {
+		r0 = ret.Get(0).(common.Position)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}

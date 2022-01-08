@@ -264,10 +264,13 @@ func (aGameBoard *gameBoard) MoveSnake() (oldValue rune, listSprite []common.Spr
 	}
 
 	// Translates the requested position inside the board
-	actualPosition := aGameBoard.translatePosition(requestedPosition)
+	actualPosition, err := aGameBoard.translatePosition(requestedPosition)
+	if err != nil {
+		return oldValue, listSprite, err
+	}
 
 	// Gets the content at the actual position
-	oldValue, err = aGameBoard.cell(actualPosition)
+	oldValue, err = aGameBoard.getOldValue(actualPosition)
 	if err != nil {
 		return oldValue, listSprite, err
 	}
@@ -276,6 +279,27 @@ func (aGameBoard *gameBoard) MoveSnake() (oldValue rune, listSprite []common.Spr
 	listSprite, err = aGameBoard.actualMove(actualPosition, oldValue)
 	// returns the old content and the list of sprites
 	return oldValue, listSprite, err
+}
+
+func (aGameBoard *gameBoard) getOldValue(position common.Position) (oldValue rune, err error) {
+	defer common.ErrorWrapper(common.GetCurrentFuncName(), &err)
+
+	// Checks if the oldValue is the tail and returns a freeSpace instead
+	tailPosition, err := aGameBoard.movingSnake.Tail()
+	if err != nil {
+		return oldValue, err
+	}
+
+	oldValue, err = aGameBoard.cell(position)
+	if err != nil {
+		return 0, err
+	}
+
+	if tailPosition == position {
+		return FreeSpace, nil
+	}
+
+	return oldValue, err
 }
 
 func (aGameBoard *gameBoard) actualMove(position common.Position, oldValue rune) (
@@ -330,6 +354,10 @@ func (aGameBoard *gameBoard) actualMove(position common.Position, oldValue rune)
 func (aGameBoard *gameBoard) cell(position common.Position) (value rune, err error) {
 	defer common.ErrorWrapper(common.GetCurrentFuncName(), &err)
 
+	if aGameBoard.size.Width <= 0 || aGameBoard.size.Height <= 0 {
+		return value, ErrInvalidSize
+	}
+
 	if !aGameBoard.checkPosition(position) {
 		return value, ErrInvalidPosition
 	}
@@ -339,6 +367,10 @@ func (aGameBoard *gameBoard) cell(position common.Position) (value rune, err err
 
 func (aGameBoard *gameBoard) setCell(position common.Position, value rune) (err error) {
 	defer common.ErrorWrapper(common.GetCurrentFuncName(), &err)
+
+	if aGameBoard.size.Width <= 0 || aGameBoard.size.Height <= 0 {
+		return ErrInvalidSize
+	}
 
 	if !aGameBoard.checkPosition(position) {
 		return ErrInvalidPosition
@@ -359,9 +391,14 @@ func (aGameBoard *gameBoard) checkPosition(position common.Position) bool {
 	return true
 }
 
-func (aGameBoard *gameBoard) translatePosition(requestedPosition common.Position) common.Position {
+func (aGameBoard *gameBoard) translatePosition(requestedPosition common.Position) (translatedPostion common.Position, err error) {
 	// The position is kept inside the board
 	// If it gets out one side, it enters the other side
+
+	if aGameBoard.size.Width <= 0 || aGameBoard.size.Height <= 0 {
+		return translatedPostion, ErrInvalidSize
+	}
+
 	translatedPosition := requestedPosition
 	maxW := aGameBoard.size.Width - 1
 	maxH := aGameBoard.size.Height - 1
@@ -379,5 +416,5 @@ func (aGameBoard *gameBoard) translatePosition(requestedPosition common.Position
 		translatedPosition.Y = 0
 	}
 
-	return translatedPosition
+	return translatedPosition, nil
 }

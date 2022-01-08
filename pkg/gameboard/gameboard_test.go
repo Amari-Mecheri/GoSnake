@@ -381,27 +381,13 @@ func TestGameBoard_CreateSnake(t *testing.T) {
 		wantErr     bool
 	}{
 		{
-			name: "TestNilSnake",
+			name: "TestEmptyBoard",
 			fields: fields{
 				size:  testdata.Size0_0,
 				board: nil,
 			},
-			wantErrType: ErrInvalidPosition,
-			wantErr:     true, // The snake is created but the board is empty
-		},
-		{
-			name: "TestEmptyBoardPos0,0",
-			fields: fields{
-				size:        testdata.Size0_0,
-				board:       nil,
-				movingSnake: snake.New(),
-			},
-			args: args{
-				position:  testdata.Position0_0,
-				direction: testdata.Direction0_0,
-			},
-			wantErrType: ErrInvalidPosition,
-			wantErr:     true, // There is a snake but the board is empty
+			wantErrType: ErrInvalidSize,
+			wantErr:     true, // The board is empty
 		},
 		{
 			name: "TestBoard3_3",
@@ -711,25 +697,39 @@ func TestGameBoard_SnakeSize(t *testing.T) {
 		candy       candy.Candyer
 	}
 	tests := []struct {
-		name     string
-		fields   fields
-		mockSize int
-		wantSize int
-		wantErr  bool
+		name         string
+		fields       fields
+		wantMockSize bool
+		mockSize     int
+		wantSize     int
+		wantErrType  error
+		wantErr      bool
 	}{
+		{
+			name: "TestNilSnake",
+			fields: fields{
+				movingSnake: nil,
+			},
+			wantMockSize: false,
+			wantSize:     0,
+			wantErrType:  ErrInvalidSnakeReference,
+			wantErr:      true,
+		},
 		{
 			name: "TestEmptySnake",
 			fields: fields{
 				movingSnake: snake.New(),
 			},
-			wantSize: 0,
-			wantErr:  false,
+			wantMockSize: false,
+			wantSize:     0,
+			wantErr:      false,
 		},
 		{
-			name:     "TestSnakeSize5",
-			mockSize: 5,
-			wantSize: 5,
-			wantErr:  false,
+			name:         "TestSnakeSize5",
+			wantMockSize: true,
+			mockSize:     5,
+			wantSize:     5,
+			wantErr:      false,
 		},
 	}
 	for _, tt := range tests {
@@ -740,7 +740,7 @@ func TestGameBoard_SnakeSize(t *testing.T) {
 				movingSnake: tt.fields.movingSnake,
 				candy:       tt.fields.candy,
 			}
-			if aGameBoard.movingSnake == nil {
+			if tt.wantMockSize {
 				// we shall mock a snake
 				aSnake := &mocks.Snaker{}
 				aSnake.On("Size").Return(tt.mockSize, nil)
@@ -748,6 +748,9 @@ func TestGameBoard_SnakeSize(t *testing.T) {
 			}
 			gotSize, err := aGameBoard.SnakeSize()
 			gotErr := (err != nil)
+			if gotErr {
+				require.ErrorIs(t, err, tt.wantErrType)
+			}
 			require.Equal(t, tt.wantErr, gotErr, "%w", err)
 			require.Equal(t, tt.wantSize, gotSize)
 		})
@@ -783,8 +786,9 @@ func TestGameBoard_MoveSnake(t *testing.T) {
 		},
 		{
 			name:         "TestEmptyBoardSnakeMove1,1", // There is no board, no move possible
+			mockOldTail:  testdata.Position0_0,
 			mockNextMove: testdata.Position1_1,
-			wantTypeErr:  ErrInvalidPosition,
+			wantTypeErr:  ErrInvalidSize,
 			wantOldValue: 0,
 			wantErr:      true,
 		},
@@ -840,6 +844,7 @@ func TestGameBoard_MoveSnake(t *testing.T) {
 				aSnake := &mocks.Snaker{}
 				aSnake.On("NextMove").Return(tt.mockNextMove, nil)
 				aSnake.On("GrowTo", tt.mockNextMove).Return(nil)
+				aSnake.On("Tail").Return(tt.mockOldTail, nil)
 				aSnake.On("MoveTo", tt.mockNextMove).Return(tt.mockOldTail, nil)
 				aGameBoard.movingSnake = aSnake
 			}
@@ -897,7 +902,7 @@ func TestGameBoard_actualMove(t *testing.T) {
 				oldValue: FreeSpace,
 			},
 			mockNextMove: testdata.Position1_1,
-			wantTypeErr:  ErrInvalidPosition,
+			wantTypeErr:  ErrInvalidSize,
 			wantErr:      true,
 		},
 		{
@@ -997,7 +1002,7 @@ func TestGameBoard_cell(t *testing.T) {
 				position: testdata.Position1_1,
 			},
 			wantValue:   0,
-			wantTypeErr: ErrInvalidPosition,
+			wantTypeErr: ErrInvalidSize,
 			wantErr:     true,
 		},
 		{
@@ -1069,7 +1074,7 @@ func TestGameBoard_setCell(t *testing.T) {
 				position: testdata.Position1_1,
 				value:    'Y',
 			},
-			wantTypeErr: ErrInvalidPosition,
+			wantTypeErr: ErrInvalidSize,
 			wantErr:     true,
 		},
 		{
@@ -1130,6 +1135,7 @@ func TestGameBoard_translatePosition(t *testing.T) {
 		fields       fields
 		args         args
 		wantPosition common.Position
+		wantErr      error
 	}{
 		{
 			name: "TestEmptyBoard", // The size of the board is 0,0
@@ -1137,6 +1143,7 @@ func TestGameBoard_translatePosition(t *testing.T) {
 				requestedPosition: testdata.Position0_0,
 			},
 			wantPosition: testdata.Position0_0,
+			wantErr:      ErrInvalidSize,
 		},
 		{
 			name: "TestSize3_3Pos1,1",
@@ -1168,6 +1175,16 @@ func TestGameBoard_translatePosition(t *testing.T) {
 			},
 			wantPosition: testdata.Position3_0,
 		},
+		{
+			name: "TestSize4_4PosMinus1,Minus1",
+			fields: fields{
+				size: testdata.Size3_3,
+			},
+			args: args{
+				requestedPosition: testdata.PositionMinus1_Minus1,
+			},
+			wantPosition: testdata.Position2_2,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -1177,8 +1194,9 @@ func TestGameBoard_translatePosition(t *testing.T) {
 				movingSnake: tt.fields.movingSnake,
 				candy:       tt.fields.candy,
 			}
-			gotPosition := aGameBoard.translatePosition(tt.args.requestedPosition)
+			gotPosition, gotErr := aGameBoard.translatePosition(tt.args.requestedPosition)
 			require.Equal(t, tt.wantPosition, gotPosition)
+			require.Equal(t, tt.wantErr, gotErr)
 		})
 	}
 }
@@ -1214,6 +1232,118 @@ func Test_random(t *testing.T) {
 			gotErr := (err != nil)
 			require.Equal(t, tt.wantErr, gotErr)
 			require.Equal(t, tt.wantRnd, gotRnd)
+		})
+	}
+}
+
+func Test_gameBoard_getOldValue(t *testing.T) {
+	type fields struct {
+		size        common.Size
+		board       [][]rune
+		movingSnake snake.Snaker
+		candy       candy.Candyer
+	}
+	type args struct {
+		position common.Position
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		mockTail     common.Position
+		mockTailErr  error
+		wantOldValue rune
+		wantErrType  error
+		wantErr      bool
+	}{
+		{
+			name: "TestEmptySnake",
+			fields: fields{
+				size:  testdata.Size0_0,
+				board: nil,
+			},
+			args: args{
+				position: testdata.Position0_0,
+			},
+			mockTailErr:  snake.ErrNoSnakeBody,
+			mockTail:     testdata.Position0_0,
+			wantOldValue: 0,
+			wantErrType:  snake.ErrNoSnakeBody,
+			wantErr:      true,
+		},
+		{
+			name: "TestEmptyBoard",
+			fields: fields{
+				size:  testdata.Size0_0,
+				board: nil,
+			},
+			args: args{
+				position: testdata.Position0_0,
+			},
+			mockTail:     testdata.Position0_0,
+			wantOldValue: 0,
+			wantErrType:  ErrInvalidSize,
+			wantErr:      true,
+		},
+		{
+			name: "TestEatTheTail",
+			fields: fields{
+				size:  testdata.Size3_3,
+				board: testdata.Board3_3Snake_1,
+			},
+			args: args{
+				position: testdata.Position0_1,
+			},
+			mockTail:     testdata.Position0_1,
+			wantOldValue: FreeSpace,
+			wantErr:      false,
+		},
+		{
+			name: "TestEatBody",
+			fields: fields{
+				size:  testdata.Size3_3,
+				board: testdata.Board3_3Snake_1,
+			},
+			args: args{
+				position: testdata.Position1_1,
+			},
+			mockTail:     testdata.Position0_1,
+			wantOldValue: SnakePart,
+			wantErr:      false,
+		},
+		{
+			name: "TestMoveToFreeSpace",
+			fields: fields{
+				size:  testdata.Size3_3,
+				board: testdata.Board3_3Snake_1,
+			},
+			args: args{
+				position: testdata.Position1_2,
+			},
+			mockTail:     testdata.Position0_1,
+			wantOldValue: 'd',
+			wantErr:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			aGameBoard := &gameBoard{
+				size:        tt.fields.size,
+				board:       tt.fields.board,
+				movingSnake: tt.fields.movingSnake,
+				candy:       tt.fields.candy,
+			}
+			aSnake := &mocks.Snaker{}
+			aSnake.On("Tail").Return(tt.mockTail, tt.mockTailErr)
+			aGameBoard.movingSnake = aSnake
+			gotOldValue, err := aGameBoard.getOldValue(tt.args.position)
+			gotErr := (err != nil)
+			require.Equal(t, tt.wantErr, gotErr)
+			if gotErr {
+				require.ErrorIs(t, err, tt.wantErrType)
+			}
+			require.Equal(t, tt.wantOldValue, gotOldValue)
 		})
 	}
 }
