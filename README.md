@@ -1,8 +1,7 @@
 amari.mecheri@gmail.com
 
-The GO/ThreeJS/Shaders/Web Assembly/Web Workers/Shared Memory version: https://github.com/Amari-Mecheri/ThreeJSSnakeGame
-
 # A version of the Snake Game in Go
+(For the GO/ThreeJS/Shaders/Web Assembly/Web Workers/Shared Memory version visit: https://github.com/Amari-Mecheri/ThreeJSSnakeGame)
 
 ### Architecture of GoSnake:
 
